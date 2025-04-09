@@ -7,12 +7,12 @@ using System.Security.Claims;
 
 namespace DotNetMultiTenant.Web.Services
 {
-    public interface ITenentService
+    public interface ITenantService
     {
         public string GetTenat();
     }
 
-    public class TenentService : ITenentService
+    public class TenentService : ITenantService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 

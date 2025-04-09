@@ -1,4 +1,5 @@
 ﻿@model HomeIndexViewModel
+@inject IAuthorizationService _authorizationService
 
 @{
     ViewData["Title"] = "Home Page";
@@ -16,7 +17,8 @@
         @foreach (var claim in User.Claims)
         {
             <p>@claim.Type - @claim.Value</p>
-        }
+        }          
+
     }
 </div>
 
@@ -24,16 +26,20 @@
     <h3>Productos</h3>
     @if (User.Identity is not null && User.Identity.IsAuthenticated)
     {
+        @if (await _authorizationService.HasPermission(User, Permissions.Products_Create))
+        {
 
-        <form method="post" class="row row-cols-lg-auto g-3 align-items-center" asp-action="Product">
-            <div class="col-12">
-                <input type="text" class="form-control" id="Name" name="Name" placeholder="Nombre del producto">
-            </div>
+            <form method="post" class="row row-cols-lg-auto g-3 align-items-center" asp-action="Product">
+                <div class="col-12">
+                    <input type="text" class="form-control" id="Name" name="Name" placeholder="Nombre del producto">
+                </div>
 
-            <div class="col-12">
-                <button type="submit" class="btn btn-primary">Crear producto</button>
-            </div>
-        </form>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Crear producto</button>
+                </div>
+            </form>
+
+        }
 
         <ul>
             @foreach (var product in Model.Products)

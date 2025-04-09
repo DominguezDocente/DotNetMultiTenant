@@ -1,7 +1,11 @@
 ﻿using DotNetMultiTenant.Web.Core;
+using DotNetMultiTenant.Web.Data;
+using DotNetMultiTenant.Web.Data.Entities;
 using DotNetMultiTenant.Web.Models;
+using DotNetMultiTenant.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace DotNetMultiTenant.Web.Controllers
@@ -10,11 +14,15 @@ namespace DotNetMultiTenant.Web.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly DataContext _context;
+        private readonly IChangeTenatService _changeTenatService;
 
-        public UsersController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        public UsersController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, DataContext context, IChangeTenatService changeTenatService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _context = context;
+            _changeTenatService = changeTenatService;
         }
 
         public IActionResult Register()
@@ -33,13 +41,6 @@ namespace DotNetMultiTenant.Web.Controllers
             IdentityUser user = new IdentityUser() { Email = model.Email, UserName = model.Email };
 
             IdentityResult result = await _userManager.CreateAsync(user, password: model.Password);
-
-            List<Claim> customClaims = new List<Claim>()
-            {
-                new Claim(Constants.CLAIM_TENANT_ID, user.Id),
-            };
-
-            await _userManager.AddClaimsAsync(user, customClaims);
 
             if (result.Succeeded)
             {
@@ -77,7 +78,26 @@ namespace DotNetMultiTenant.Web.Controllers
 
             if (result.Succeeded)
             {
-                return RedirectToAction("Index", "Home");
+                IdentityUser user = await _userManager.FindByEmailAsync(model.Email);
+
+                List<Guid> linkedCompaniesIds = await _context.CompanyUserPermissions.Include(x => x.Company)
+                                                                                    .Where(x => x.UserId == user.Id && x.Permission == Permissions.Null)
+                                                                                    .OrderBy(x => x.CompanyId)
+                                                                                    .Take(2)
+                                                                                    .Select(x => x.CompanyId!)
+                                                                                    .ToListAsync();
+
+                if (linkedCompaniesIds.Count == 0)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else if (linkedCompaniesIds.Count == 1)
+                {
+                    await _changeTenatService.ChangeTenant(linkedCompaniesIds[0], user.Id);
+                    return RedirectToAction("Index", "Home");
+                }
+
+                return RedirectToAction("Change", "Companies");
             }
             else
             {

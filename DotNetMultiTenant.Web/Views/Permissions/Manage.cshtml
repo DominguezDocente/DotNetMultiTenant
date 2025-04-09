@@ -1,0 +1,46 @@
+﻿@model ManagePermissionsDTO
+
+<h1>Administrar permisos de @Model.Email</h1>
+
+<form asp-action="Manage" method="POST">
+    <input type="hidden" asp-for=UserId />
+    <input type="hidden" asp-for=Email />
+
+    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    <button type="button" class="btn btn-secondary" onclick="makeSelection(true)">Seleccionar todos</button>
+    <button type="button" class="btn btn-secondary" onclick="makeSelection(false)">Deseleccionar todos</button>
+
+    <ul>
+        @for (var i = 0; i < Model.Permissions.Count; i++)
+        {
+            <li>
+                <input
+                    id="Permissions[@i].HasPermission"
+                    name="Permissions[@i].HasPermission"
+                    value="true"
+                    type="checkbox"
+                    @(Model.Permissions[i].HasPermission ? "checked" : string.Empty)
+                    @(Model.Permissions[i].Permission == Permissions.Null ? "disabled" : string.Empty) />
+                <input type="hidden" value="@Model.Permissions[i].Permission" name="Permissions[@i].Permission" />
+                <span>@Model.Permissions[i].Description</span>
+            </li>
+        }
+    </ul>
+</form>
+
+@section Scripts{
+    <script>
+        function makeSelection(checked) {
+
+            const checks = document.querySelectorAll("input[type=checkbox]");
+
+            checks.forEach(v => {
+
+                if (!v.disabled) {
+
+                    v.checked = checked;
+                }
+            });
+        }
+    </script>
+}

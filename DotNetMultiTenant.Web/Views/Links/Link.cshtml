@@ -1,0 +1,25 @@
+﻿@model LinkUser
+
+<h1>Vincular usuario</h1>
+<h5>Vincular usuarios a: @Model.CompanyName</h5>
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<form asp-action="Link" method="POST">
+    <input type="hidden" asp-for="CompanyId" />
+    <input type="hidden" asp-for="CompanyName" />
+
+    <div class="mb-3">
+        <label asp-for="UserEmail" class="form-label"></label>
+        <input type="text" asp-for="UserEmail" class="form-control" />
+        <span asp-validation-for="UserEmail" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Enviar</button>
+    <a class="btn btn-secondary" asp-action="Index" asp-controller="Home">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

@@ -2,6 +2,7 @@
 using DotNetMultiTenant.Web.Data;
 using DotNetMultiTenant.Web.Data.Entities;
 using DotNetMultiTenant.Web.Models;
+using DotNetMultiTenant.Web.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +26,7 @@ namespace DotNetMultiTenant.Web.Controllers
 
 
         [HttpPost]
+        [HasPermission(Permissions.Products_Create)]
         public async Task<IActionResult> Product(Product product)
         {
             _context.Add(product);

@@ -185,6 +185,77 @@ namespace DotNetMultiTenant.Web.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Companies",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatorUserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Companies", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Companies_AspNetUsers_CreatorUserId",
+                        column: x => x.CreatorUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CompanyUserConnections",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CompanyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    CreationDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CompanyUserConnections", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CompanyUserConnections_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CompanyUserConnections_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CompanyUserPermissions",
+                columns: table => new
+                {
+                    CompanyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Permission = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CompanyUserPermissions", x => new { x.CompanyId, x.UserId, x.Permission });
+                    table.ForeignKey(
+                        name: "FK_CompanyUserPermissions_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_CompanyUserPermissions_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.InsertData(
                 table: "Countries",
                 columns: new[] { "Id", "Name" },
@@ -235,6 +306,26 @@ namespace DotNetMultiTenant.Web.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Companies_CreatorUserId",
+                table: "Companies",
+                column: "CreatorUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CompanyUserConnections_CompanyId",
+                table: "CompanyUserConnections",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CompanyUserConnections_UserId",
+                table: "CompanyUserConnections",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CompanyUserPermissions_UserId",
+                table: "CompanyUserPermissions",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_TenantId",
                 table: "Products",
                 column: "TenantId");
@@ -259,6 +350,12 @@ namespace DotNetMultiTenant.Web.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "CompanyUserConnections");
+
+            migrationBuilder.DropTable(
+                name: "CompanyUserPermissions");
+
+            migrationBuilder.DropTable(
                 name: "Countries");
 
             migrationBuilder.DropTable(
@@ -266,6 +363,9 @@ namespace DotNetMultiTenant.Web.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Companies");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

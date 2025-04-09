@@ -1,7 +1,9 @@
 ﻿using DotNetMultiTenant.Web.Data;
+using DotNetMultiTenant.Web.Security;
 using DotNetMultiTenant.Web.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -42,9 +44,20 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         );
     });
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = new PathString("/Users/Login");
+});
+
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddTransient<ITenentService, TenentService>();
+builder.Services.AddTransient<ITenantService, TenentService>();
+builder.Services.AddTransient<IChangeTenatService, ChangeTenatService>();
+builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IAuthorizationPolicyProvider, HasPermissionPolicyProvider>();
+builder.Services.AddTransient<IAuthorizationHandler, HasPermissionHandler>();
+
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

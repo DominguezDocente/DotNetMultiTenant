@@ -22,6 +22,75 @@ namespace DotNetMultiTenant.Web.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("DotNetMultiTenant.Web.Data.Entities.Company", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatorUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorUserId");
+
+                    b.ToTable("Companies");
+                });
+
+            modelBuilder.Entity("DotNetMultiTenant.Web.Data.Entities.CompanyUserConnection", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CompanyUserConnections");
+                });
+
+            modelBuilder.Entity("DotNetMultiTenant.Web.Data.Entities.CompanyUserPermission", b =>
+                {
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Permission")
+                        .HasColumnType("int");
+
+                    b.HasKey("CompanyId", "UserId", "Permission");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CompanyUserPermissions");
+                });
+
             modelBuilder.Entity("DotNetMultiTenant.Web.Data.Entities.Country", b =>
                 {
                     b.Property<int>("Id")
@@ -277,6 +346,55 @@ namespace DotNetMultiTenant.Web.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("DotNetMultiTenant.Web.Data.Entities.Company", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "CreatorUser")
+                        .WithMany()
+                        .HasForeignKey("CreatorUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatorUser");
+                });
+
+            modelBuilder.Entity("DotNetMultiTenant.Web.Data.Entities.CompanyUserConnection", b =>
+                {
+                    b.HasOne("DotNetMultiTenant.Web.Data.Entities.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DotNetMultiTenant.Web.Data.Entities.CompanyUserPermission", b =>
+                {
+                    b.HasOne("DotNetMultiTenant.Web.Data.Entities.Company", "Company")
+                        .WithMany("CompanyUserPermissions")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -326,6 +444,11 @@ namespace DotNetMultiTenant.Web.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("DotNetMultiTenant.Web.Data.Entities.Company", b =>
+                {
+                    b.Navigation("CompanyUserPermissions");
                 });
 #pragma warning restore 612, 618
         }
